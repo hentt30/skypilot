@@ -1,0 +1,43 @@
+# Helm values for the e2e test deployment. Minimal — single API server pod
+# bound to the in-cluster SA, no ingress (port-forward instead), no auth,
+# no persistent storage, no DB.
+#
+# The apiService.config value is overridden at install time via
+# `--set-file apiService.config=...`. See setup-cluster.sh.
+apiService:
+  image: skypilot:ws-namespace-e2e
+  imagePullPolicy: IfNotPresent  # image is loaded into kind, not pulled
+  replicas: 1
+  enableUserManagement: false
+  upgradeStrategy: Recreate
+  # Defaults (4 CPU / 8 GiB) won't fit on a single-node kind cluster.
+  # skipResourceCheck bypasses the chart's pre-install assertion; the
+  # box only has ~8 GiB total and the e2e workloads are tiny sleepers.
+  skipResourceCheck: true
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "3Gi"
+
+# Single in-cluster SA. The chart wires a SA and ClusterRole binding when
+# useApiServerCluster=true; setup-cluster.sh additionally elevates the SA
+# to cluster-admin so it can land pods in any of the test namespaces.
+kubernetesCredentials:
+  useApiServerCluster: true
+  inclusterNamespace: skypilot
+
+# Disable everything not strictly needed for the test.
+ingress:
+  enabled: false
+ingress-nginx:
+  enabled: false
+storage:
+  enabled: false
+
+awsCredentials:
+  enabled: false
+gcpCredentials:
+  enabled: false

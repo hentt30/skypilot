@@ -1,0 +1,16 @@
+# Isolated SkyPilot config exercising ONLY layer 4 (global cloud-level).
+#
+# With NO per-context override (no kubernetes.context_configs.in-cluster),
+# a launch under the default workspace must fall through to the
+# cloud-level namespace.
+
+allowed_clouds:
+  - kubernetes
+
+kubernetes:
+  allowed_contexts:
+    - in-cluster
+  namespace: ns-layer4-global
+
+workspaces:
+  default: {}

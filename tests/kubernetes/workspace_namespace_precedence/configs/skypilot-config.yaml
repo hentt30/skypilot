@@ -1,0 +1,48 @@
+# Single SkyPilot config exercising all four namespace-precedence layers.
+# Used for L1-L4 in the e2e matrix. The kind cluster's API server is
+# reached via in-cluster auth, so SkyPilot sees the context name
+# `in-cluster` (per sky/adaptors/kubernetes.py:DEFAULT_IN_CLUSTER_REGION).
+#
+#   Layer 4 (global cloud-level):       kubernetes.namespace
+#   Layer 3 (global per-context):       kubernetes.context_configs.<ctx>.namespace
+#   Layer 2 (workspace cloud-level):    workspaces.<ws>.kubernetes.namespace
+#   Layer 1 (workspace per-context):    workspaces.<ws>.kubernetes.context_configs.<ctx>.namespace
+#
+# Workspace -> active layer mapping:
+#   default              -> L4   (no workspace override; falls all the way through)
+#   ws-no-overrides      -> L3   (empty kubernetes block; falls to global per-context)
+#   ws-cloud-shorthand   -> L2   (sets workspace cloud-level namespace)
+#   ws-per-context       -> L1   (sets workspace per-context namespace)
+
+allowed_clouds:
+  - kubernetes
+
+kubernetes:
+  allowed_contexts:
+    - in-cluster
+  namespace: ns-layer4-global
+  context_configs:
+    in-cluster:
+      namespace: ns-layer3-global-per-ctx
+
+workspaces:
+  default: {}
+
+  ws-no-overrides:
+    kubernetes:
+      allowed_contexts:
+        - in-cluster
+
+  ws-cloud-shorthand:
+    kubernetes:
+      allowed_contexts:
+        - in-cluster
+      namespace: ns-layer2-ws-cloud-shorthand
+
+  ws-per-context:
+    kubernetes:
+      allowed_contexts:
+        - in-cluster
+      context_configs:
+        in-cluster:
+          namespace: ns-layer1-ws-per-context
