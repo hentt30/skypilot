@@ -1,0 +1,9 @@
+resources:
+  cpus: 0.5+
+  memory: 0.5+
+  infra: kubernetes
+num_nodes: 1
+setup: echo "setup done"
+run: |
+  echo "JobGroup task running on namespace=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace 2>/dev/null || echo unknown)"
+  sleep 10
